@@ -30,6 +30,10 @@ WORKDIR /root/
 # Copy the binary from builder stage
 COPY --from=builder /app/main .
 
+# PROXY
+ENV HTTP_PROXY=
+ENV HTTPS_PROXY=
+
 # Expose port
 EXPOSE 8082
 

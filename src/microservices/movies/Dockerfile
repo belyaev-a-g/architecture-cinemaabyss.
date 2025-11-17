@@ -35,5 +35,9 @@ COPY --from=builder /app/movies-service .
 # Expose the application port
 EXPOSE 8081
 
+# PROXY
+ENV HTTP_PROXY=
+ENV HTTPS_PROXY=
+
 # Command to run the executable
 CMD ["./movies-service"]

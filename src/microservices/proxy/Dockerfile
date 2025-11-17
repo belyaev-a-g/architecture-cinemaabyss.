@@ -36,5 +36,9 @@ COPY --from=builder /app/proxy-service .
 # Открываем порт приложения
 EXPOSE 8000
 
+# PROXY
+ENV HTTP_PROXY=
+ENV HTTPS_PROXY=
+
 # Команда для запуска исполняемого файла
 CMD ["./proxy-service"]
