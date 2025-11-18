@@ -1,9 +1,8 @@
 package main
 
 import (
-	"crypto/md5"
-	"encoding/hex"
 	"log"
+	"math/rand"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -112,30 +111,14 @@ func (p *ProxyService) moviesHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Если процент миграции равен 0, направляем только в монолит
-	if p.config.MoviesMigrationPercent == 0 {
-		log.Printf("Routing movies request to monolith (0%% migration)")
-		p.monolithProxy.ServeHTTP(w, r)
-		return
-	}
-
-	// Если процент миграции 100, направляем только в movies-service
-	if p.config.MoviesMigrationPercent >= 100 {
-		log.Printf("Routing movies request to movies service (100%% migration)")
-		p.moviesProxy.ServeHTTP(w, r)
-		return
-	}
-
-	// Для частичной миграции используем хеширование на основе запроса
-	// Это гарантирует, что один и тот же запрос всегда идет в один и тот же сервис
-	hash := p.generateRequestHash(r)
-	if p.shouldRouteToMicroservice(hash, p.config.MoviesMigrationPercent) {
-		log.Printf("Routing movies request to movies service (%d%% migration)", p.config.MoviesMigrationPercent)
-		p.moviesProxy.ServeHTTP(w, r)
-	} else {
-		log.Printf("Routing movies request to monolith (%d%% migration)", p.config.MoviesMigrationPercent)
-		p.monolithProxy.ServeHTTP(w, r)
-	}
+    // Упрощенный round robin
+    if rand.Intn(100) < p.config.MoviesMigrationPercent {
+      log.Printf("Routing movies to movies")
+	  p.moviesProxy.ServeHTTP(w, r)
+    } else {
+      log.Printf("Routing movies to monolith")
+	  p.monolithProxy.ServeHTTP(w, r)
+    }
 }
 
 func (p *ProxyService) monolithHandler(w http.ResponseWriter, r *http.Request) {
@@ -146,36 +129,4 @@ func (p *ProxyService) monolithHandler(w http.ResponseWriter, r *http.Request) {
 func (p *ProxyService) eventsHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Routing request to events service: %s", r.URL.Path)
 	p.eventsProxy.ServeHTTP(w, r)
-}
-
-// generateRequestHash создает хеш для запроса
-// Это гарантирует, что один и тот же запрос всегда направляется в один и тот же сервис
-func (p *ProxyService) generateRequestHash(r *http.Request) string {
-	// Используем путь URL и параметры запроса для постоянной маршрутизации
-	hashInput := r.URL.Path + r.URL.RawQuery
-
-	// Добавляем идентификатор пользователя, если есть (из заголовков, параметров запроса и т.д.)
-	if userID := r.Header.Get("X-User-ID"); userID != "" {
-		hashInput += userID
-	}
-	if userID := r.URL.Query().Get("user_id"); userID != "" {
-		hashInput += userID
-	}
-
-	hash := md5.Sum([]byte(hashInput))
-	return hex.EncodeToString(hash[:])
-}
-
-// shouldRouteToMicroservice определяет, должен ли запрос идти в микросервис
-// на основе хеширования и процента миграции
-func (p *ProxyService) shouldRouteToMicroservice(hash string, percentage int) bool {
-	// Преобразуем первые 8 символов хеша в целое число
-	hashInt, err := strconv.ParseInt(hash[:8], 16, 64)
-	if err != nil {
-		// Резервный вариант с простым модулем, если парсинг хеша не удался
-		hashInt = int64(len(hash))
-	}
-
-	// Вычисляем, попадает ли этот хеш в процент миграции
-	return int(hashInt%100) < percentage
 }
