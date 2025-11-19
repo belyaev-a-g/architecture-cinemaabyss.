@@ -6,8 +6,8 @@ WORKDIR /app
 COPY package*.json ./
 
 # PROXY
-ENV HTTP_PROXY=http://172.16.0.250:4343
-ENV HTTPS_PROXY=http://172.16.0.250:4343
+#ENV HTTP_PROXY=http://172.16.0.250:4343
+#ENV HTTPS_PROXY=http://172.16.0.250:4343
 
 # Install dependencies
 RUN npm install
@@ -16,8 +16,8 @@ RUN npm install
 COPY . .
 
 # PROXY
-ENV HTTP_PROXY=
-ENV HTTPS_PROXY=
+#ENV HTTP_PROXY=
+#ENV HTTPS_PROXY=
 
 # Set default command to run tests
 ENTRYPOINT ["node", "run-tests.js"]
