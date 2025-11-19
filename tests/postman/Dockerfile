@@ -23,4 +23,5 @@ COPY . .
 ENTRYPOINT ["node", "run-tests.js"]
 
 # Default arguments - can be overridden at runtime
-CMD ["--environment", "local"]
+CMD ["--environment", "docker"]
+#CMD ["--environment", "local"]
