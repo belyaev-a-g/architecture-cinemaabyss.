@@ -6,8 +6,8 @@ WORKDIR /app
 COPY go.mod ./
 
 # PROXY
-ENV HTTP_PROXY=http://172.16.0.250:4343
-ENV HTTPS_PROXY=http://172.16.0.250:4343
+#ENV HTTP_PROXY=http://172.16.0.250:4343
+#ENV HTTPS_PROXY=http://172.16.0.250:4343
 
 # Download all dependencies
 RUN go mod download
@@ -22,8 +22,8 @@ RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o movies-service .
 FROM alpine:latest  
 
 # PROXY
-ENV HTTP_PROXY=http://172.16.0.250:4343
-ENV HTTPS_PROXY=http://172.16.0.250:4343
+#ENV HTTP_PROXY=http://172.16.0.250:4343
+#ENV HTTPS_PROXY=http://172.16.0.250:4343
 
 RUN apk --no-cache add ca-certificates
 
@@ -36,8 +36,8 @@ COPY --from=builder /app/movies-service .
 EXPOSE 8081
 
 # PROXY
-ENV HTTP_PROXY=
-ENV HTTPS_PROXY=
+#ENV HTTP_PROXY=
+#ENV HTTPS_PROXY=
 
 # Command to run the executable
 CMD ["./movies-service"]
