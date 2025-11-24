@@ -22,7 +22,7 @@ spec:
     spec:
       containers:
       - name: monolith
-        image:  ghcr.io/db-exp/cinemaabysstest/monolith:latest
+        image: ghcr.io/belyaev-a-g/architecture-cinemaabyss/monolith:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
@@ -70,4 +70,4 @@ spec:
   ports:
   - port: 8080
     targetPort: 8080
-  type: ClusterIP
+  type: LoadBalancer

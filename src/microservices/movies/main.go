@@ -125,6 +125,7 @@ func getAllMovies(w http.ResponseWriter, r *http.Request) {
 }
 
 func getMovieByID(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("get movie from movies")
 	id := r.URL.Query().Get("id")
 	var m Movie
 	err := db.QueryRow("SELECT id, title, description, rating FROM movies WHERE id = $1", id).Scan(&m.ID, &m.Title, &m.Description, &m.Rating)

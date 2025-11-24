@@ -1,0 +1,78 @@
+@startuml
+!include ../C4/C4_Component.puml
+!include ../C4/C4_Container.puml
+
+Title "CinemaAbyss. To be. Диаграмма контейнеров"
+Person(User, "Пользователь", "Пользователь онлайн-кинотеатра")
+System_Boundary(CinemaAbyss, "Кинобездна") {
+Boundary(clients_ui, "Пользовательские приложения") {
+Container(MobileApp, "Мобильное приложение", "Android/iOS", "Мобильное приложение")
+Container(WebSite, "Вебсайт", "React", "Сайт для браузеров")
+Container(SmartTV, "Приложение для Smart TV", "Android TV/WebOS", "Приложение для Smart TV")
+}
+
+Boundary(BackendApi, "Backend services") {
+  Container(API_Gateway, "API Gateway", "Kong", "Единая точка входа. Аутентификация, маршрутизация и ограничение запросов.")
+Boundary(bff, "Backend for frontend") {
+  Container(BFF_WebSite, "Бекэнд для сайта", "Go")
+  Container(BFF_MobileApp, "Бекэнд для мобильного приложения", "Go")
+  Container(BFF_SmartTV, "Бекэнд для умных телевизоров", "Go")
+}
+  Container(Accounts, "Личный кабинет", "Go", "Управляет регистрацией, аутентификацией и данными пользователя. Подписка и платежи")
+  ContainerDb(AccountsDb, "База данных личного кабинета", "PostgreSQL", "Хранение пользовательской регистрационной информации, журналы, подписки и платежи")
+  Container(Movies, "Сервис фильмов", "Go", "Просмотр контента, метаданные фильмов, рейтинги, жанры")
+  Container(VideoMetadataDb, "База данных с метаданными видеофайлов", "PostgreSQL", "Хранение метаданных видеофайлов")
+  Container(S3Storage, "S3-хранилище для видеофайлов", "S3", "Хранение видеофайлов")
+  Container(Internal_recommend, "Сервис предпочтений", "Go", "Личные рейтинги, история, избранное")
+  ContainerDb(Internal_recommendDb, "База данных сервисa предпочтений", "PostgreSQL", "Хранит пользовательские предпочтения")
+  Container(Notification, "Сервис уведомлений", "Go", "PUSH/SMS/E-MAIL уведомления")
+  ContainerDb(NotificationDb, "База данных сервиса уведомлений", "PostgreSQL", "Хранит подписки на PUSH/SMS/E-MAIL уведомления")
+  ContainerQueue(Kafka, "Сервис обмена данными", "Kafka", "Обрабатывает коммуникацию между сервисами на основе событий с использованием Kafka")
+  Container(PaymentService, "Платёжный сервис", "Go", "Управление оплатой, тарифами, подписками")
+  ContainerDb(PaymentDb, "База данных платёжного сервиса", "PostgreSQL", "Хранит информацию об оплате, тарифах, подписках")
+}
+
+System_Ext(SmsGate, "Система SMS информирования", "Система SMS оповещения")
+System_Ext(EmailGateway, "Система E-mail информирования", "Система оповещения по e-mail")
+System_Ext(PaySystem, "Платежная система", "Обрабатывает платежные транзакции")
+System_Ext(ExternalCinema, "Внешние онлайн-кинотеатры", "Предоставление фильмов по запросу")
+System_Ext(LoyaltyServices, "Сервисы лояльности", "Сервисы лояльности")
+System_Ext(MarketPlaces, "Маркетплейсы", "Маркетплейсы")
+System_Ext(Ext_recommend, "Рекомендательная система", "Предоставляет список рекомендуемых фильмов")
+}
+
+Rel(Notification, NotificationDb, "Запросы")
+Rel(Internal_recommend, Kafka, "Данные c сервиса рекомендаций", "Потребитель")
+Rel(Internal_recommend, Internal_recommendDb, "Чтение/Запись(SQL)")
+Rel(Movies, Kafka, "Контент с внешних онлайн-кинотеатров", "Потребитель")
+Rel(Movies, Kafka, "Оценка фильма, добавление", "Производитель")
+Rel(Ext_recommend, Kafka, "Рекомендации", "Производитель")
+Rel(Ext_recommend, Kafka, "Оценка фильма", "Потребитель")
+Rel(ExternalCinema, Kafka, "Внешний контент", "Производитель")
+Rel(Movies, VideoMetadataDb, "Запрос метаданнх фильмов")
+Rel(Movies, S3Storage, "Запрос фильмов из хранилища")
+Rel(User, SmartTV, "")
+Rel(User, MobileApp, "")
+Rel(User, WebSite, "", "")
+Rel(Notification, SmsGate, "SMS информирование")
+Rel(Notification, EmailGateway, "E-mail информирование")
+Rel(MobileApp, API_Gateway, "HTTPS/REST")
+Rel(SmartTV, API_Gateway, "HTTPS/REST")
+Rel(WebSite, API_Gateway, "HTTPS/REST")
+Rel(API_Gateway, BFF_MobileApp, "")
+Rel(API_Gateway, BFF_SmartTV, "")
+Rel(API_Gateway, BFF_WebSite, "")
+Rel(bff, Accounts, "Управление личным кабинетом")
+Rel(bff, Movies, "Просмотр фильмов")
+Rel(Accounts, Kafka, "Регистрация, вход", "Производитель")
+Rel(PaymentService, Kafka, "События платежей (успешные, неудачные)", "Производитель")
+Rel(Accounts, PaymentService, "Платёжные транзакции")
+Rel(Accounts, LoyaltyServices, "Системы лояльности")
+Rel(Accounts, MarketPlaces, "Взаимодействие с маркетплейсами")
+Rel(PaymentService, PaySystem, "Оплата подписки")
+Rel(PaymentService, PaymentDb, "Хранение истории")
+Rel(Accounts, AccountsDb, "Хранение данных личного кабинета")
+Rel(Accounts, Notification, "Уведомления об окончании подписки, смене пароля")
+Rel(Accounts, Internal_recommend, "Рекомендации пользователю, рейтинги, история просмотра")
+
+@enduml
