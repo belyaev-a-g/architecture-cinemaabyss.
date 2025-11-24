@@ -47,7 +47,7 @@ monolith:
   service:
     port: 8080
     targetPort: 8080
-    type: LoadBalancer
+    type: ClusterIP
 
 # Proxy service configuration
 proxyService:
@@ -67,7 +67,7 @@ proxyService:
   service:
     port: 8000
     targetPort: 8000
-    type: LoadBalancer
+    type: ClusterIP
 
 # Movies service configuration
 moviesService:
@@ -87,7 +87,7 @@ moviesService:
   service:
     port: 8081
     targetPort: 8081
-    type: LoadBalancer
+    type: ClusterIP
 
 # Events service configuration
 eventsService:
@@ -107,7 +107,7 @@ eventsService:
   service:
     port: 8082
     targetPort: 8082
-    type: LoadBalancer
+    type: ClusterIP
 
 # Kafka configuration
 kafka:
@@ -177,6 +177,14 @@ ingress:
           pathType: Prefix
           service: events-service
           port: 8082
+        - path: /api
+          pathType: Prefix
+          service: monolith
+          port: 8080
+        - path: /api/movies
+          pathType: Prefix
+          service: movies-service
+          port: 8081
 
 # Application configuration
 config:
