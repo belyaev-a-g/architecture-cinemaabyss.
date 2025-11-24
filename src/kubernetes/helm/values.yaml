@@ -5,7 +5,7 @@ global:
 
 # Image pull secrets
 imagePullSecrets:
-  dockerconfigjson: ewoJImF1dGhzIjogewoJCSJnaGNyLmlvIjogewoJCQkiYXV0aCI6
+  dockerconfigjson: ewogICJhdXRocyI6IHsKICAgICJnaGNyLmlvIjogewogICAgICAiYXV0aCI6ICJZbVZzZVdGbGRpMWhMV2M2WjJod1gwOHhUMWwxVEVWRFZXTnBSRmx1T0haMFJqTnVVREpWTlZocFlYbHVXREV4U21wVGFRPT0iCiAgICB9CiAgfQp9Cg== 
 # Database configuration
 database:
   host: postgres
@@ -33,7 +33,7 @@ database:
 monolith:
   enabled: true
   image:
-    repository: ghcr.io/db-exp/cinemaabysstest/monolith
+    repository: ghcr.io/belyaev-a-g/architecture-cinemaabyss/monolith
     tag: latest
     pullPolicy: Always
   replicas: 1
@@ -47,13 +47,13 @@ monolith:
   service:
     port: 8080
     targetPort: 8080
-    type: ClusterIP
+    type: LoadBalancer
 
 # Proxy service configuration
 proxyService:
   enabled: true
   image:
-    repository: ghcr.io/db-exp/cinemaabysstest/proxy-service
+    repository: ghcr.io/belyaev-a-g/architecture-cinemaabyss/proxy-service
     tag: latest
     pullPolicy: Always
   replicas: 1
@@ -65,15 +65,15 @@ proxyService:
       cpu: 100m
       memory: 128Mi
   service:
-    port: 80
+    port: 8000
     targetPort: 8000
-    type: ClusterIP
+    type: LoadBalancer
 
 # Movies service configuration
 moviesService:
   enabled: true
   image:
-    repository: ghcr.io/db-exp/cinemaabysstest/movies-service
+    repository: ghcr.io/belyaev-a-g/architecture-cinemaabyss/movies-service
     tag: latest
     pullPolicy: Always
   replicas: 1
@@ -87,13 +87,13 @@ moviesService:
   service:
     port: 8081
     targetPort: 8081
-    type: ClusterIP
+    type: LoadBalancer
 
 # Events service configuration
 eventsService:
   enabled: true
   image:
-    repository: ghcr.io/db-exp/cinemaabysstest/events-service
+    repository: ghcr.io/belyaev-a-g/architecture-cinemaabyss/events-service
     tag: latest
     pullPolicy: Always
   replicas: 1
@@ -107,7 +107,7 @@ eventsService:
   service:
     port: 8082
     targetPort: 8082
-    type: ClusterIP
+    type: LoadBalancer
 
 # Kafka configuration
 kafka:
@@ -172,7 +172,7 @@ ingress:
         - path: /
           pathType: Prefix
           service: proxy-service
-          port: 80
+          port: 8000
         - path: /api/events
           pathType: Prefix
           service: events-service
